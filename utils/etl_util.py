@@ -1,7 +1,10 @@
 import pandas as pd
+import numpy as np
+import datetime
+from datetime import date
 
-import fall2022py.utils.file_util as fileu
-import fall2022py.utils.misc_util as miscu
+import utils.file_util as fileu
+import utils.misc_util as miscu
 
 
 def apply_dtype_feature(df, config):
@@ -32,7 +35,10 @@ def apply_dtype_feature(df, config):
                 elif type_value is float or type_value == 'float':
                     df[column_key] = df[column_key].fillna(0.0)
                     df[column_key] = df[column_key].astype(float)
-                # TODO: Implement datetime.date type
+                # datetime.date type.
+                elif type_value is datetime.date or type_value == 'datetime.date':
+                    df[column_key] = np.vectorize(date.fromisoformat)(df[column_key])
+
             else:
                 raise KeyError(f'Column <{column_key}> is missing from given dataframe')
 
@@ -49,7 +55,7 @@ def mapping_feature(df, config):
     :return: df_target: pd.DataFrame; Resulted dataframe
     """
     df_mapping = read_feature(config['read'])
-    df_target = pd.merge(df, df_mapping, how='left', left_index=True,
+    df_target = pd.merge(df, df_mapping, how='left', left_index=False,
                          left_on=miscu.eval_elem_mapping(config, 'left_on'),
                          right_on=miscu.eval_elem_mapping(config, 'right_on'))
     df_target.drop(columns=miscu.eval_elem_mapping(config, 'right_on'), inplace=True)
@@ -80,3 +86,20 @@ def read_feature(config):
         df_target = apply_dtype_feature(df_target, apply_dtype_config)
 
     return df_target
+
+
+def write_feature(df_output, config):
+    """
+    ETL feature to write a file, based on provided ETL configuration section
+    :param df_target: pd.DataFrame; the output dataframe
+    :param config: dict; Provided configuration mapping
+    :return: None
+    """
+    path = fileu.write(description=miscu.eval_elem_mapping(config, 'description'),
+                       df=df_output,
+                       path=miscu.eval_elem_mapping(config, 'path'),
+                       file_type=miscu.eval_elem_mapping(config, 'file_type', default_value='csv'),
+                       separator=miscu.eval_elem_mapping(config, 'separator', default_value=','),
+                       mode=miscu.eval_elem_mapping(config, 'mode', default_value='new'))
+
+    return path

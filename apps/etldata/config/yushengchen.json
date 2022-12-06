@@ -1,0 +1,78 @@
+{
+    "feature_args": {
+        "-input": {
+            "dest": "input_path",
+            "help": "Input data path",
+            "required": "True"
+        },
+        "-output": {
+            "dest": "output_path",
+            "help": "Output data path",
+            "required": "True"
+        },
+        "-mapping": {
+            "dest": "mapping_path",
+            "help": "Mapping data path",
+            "required": "True"
+        }
+    },
+    "extraction": {
+        "description": "YuSheng Chen",
+        "input": {
+            "read": {
+                "file_type": "csv",
+                "separator": ",",
+                "apply_dtype": {
+                    "year": "int",
+                    "match_id": "str",
+                    "match_name": "str",
+                    "match_date": "datetime.date",
+                    "team_name": "str",
+                    "player_id": "str",
+                    "minute_label": "int",
+                    "minute_stoppage": "int",
+                    "match_period": "int",
+                    "match_period": "int",
+                    "own_goal": "int"  
+                }    
+            },
+            "plugin": null
+        },
+        "mapping": {
+            "read": {
+                "file_type": "excel",
+                "skip_rows": 0,
+                "use_cols": "A:G",
+                "sheet_name": 0,
+                "apply_dtype": {
+                    "player_unique_id": "str",
+                    "family_name": "str",
+                    "given_name": "str",
+                    "birth_date": "datetime.date",
+                    "count_tournaments": "int",
+                    "list_tournaments": "str",
+                    "player_wikipedia_link": "str"
+                }
+            },
+            "left_on": 
+                "player_id"
+            ,
+            "right_on": 
+                "player_unique_id"
+            ,
+            "plugin": null
+        },
+        "output": {
+            "write": {
+                "file_type": "csv",
+                "separator": ",",
+                "mode": "new"
+            },
+            "col_rename": {
+            },
+            "assign_static": {
+            },
+            "plugin": null
+        }
+    }
+}

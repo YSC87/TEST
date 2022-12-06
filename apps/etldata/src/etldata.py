@@ -5,8 +5,9 @@ import os
 import sys
 from types import SimpleNamespace as Namespace
 
-import fall2022py.utils.etl_util as etlu
-import fall2022py.utils.misc_util as miscu
+sys.path.insert(0, "/Users/ysc/Desktop/6861/fall2022py")
+import utils.etl_util as etlu
+import utils.misc_util as miscu
 
 
 RETURN_SUCCESS = 0
@@ -20,9 +21,11 @@ def main(argv):
         args, process_name, process_type, process_config = _interpret_args(argv)
 
         # Initialize standard logging \ destination file handlers.
-        # TODO: Finish/fix logging below.
-        std_filename = "c:\\temp\\etldata.log"
-        logging.basicConfig(filename=std_filename, filemode='a', format='%(asctime)s - %(message)s')
+        std_filename = "/Users/ysc/Desktop/6861/fall2022py/etldata.log"
+        logging.basicConfig(filename=std_filename,
+                            filemode='a',
+                            format='%(asctime)s - %(message)s',
+                            level=logging.INFO)
         logging.info('')
         logging.info(f'Entering {APP}')
 
@@ -68,7 +71,7 @@ def _interpret_args(argv):
     process_name = process_args[0]
     process_type = process_args[1]
     current_path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    with open(os.path.join(current_path, f'..\\config\\{process_name}.json')) as file_config:
+    with open(os.path.join(current_path, f'../config/{process_name}.json')) as file_config:
         mapping_config = json.load(file_config, object_hook=lambda d: Namespace(**d))
         if process_type == 'extraction':
             process_config = vars(mapping_config.extraction)
@@ -122,13 +125,18 @@ def run_extraction(args, config):
     # Output section
     # --------------------------------
 
-    # TODO: Implement and complete this section with the following steps:
+    # Prepare additional output parameters and update appropriate configuration section.
+    # Inject 'path' and 'description' into <output> config section.
+    output_update_with = {'path': miscu.eval_elem_mapping(args, 'output_path'), 'description': config['description']}
+    output_config = miscu.eval_elem_mapping(config, 'output')
+    output_write_config = miscu.eval_update_mapping(output_config, 'write', output_update_with)
 
-    # TODO: Prepare additional mapping parameters and update appropriate configuration section.
+    etlu.write_feature(df_target, output_write_config)
 
-    # TODO: Inject 'path' and 'description' into <output> config section.
-
-    # TODO: Run write ETL feature.
+    # Engage plugin from <output> config section, if available.
+    output_plugin = miscu.eval_elem_mapping(output_config, "plugin")
+    if output_plugin:
+        df_target = output_plugin(df_target)
 
     return df_target
 
