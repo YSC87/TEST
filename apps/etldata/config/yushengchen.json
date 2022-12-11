@@ -8,12 +8,12 @@
         "-output": {
             "dest": "output_path",
             "help": "Output data path",
-            "required": "True"
+            "required": "False"
         },
         "-mapping": {
             "dest": "mapping_path",
             "help": "Mapping data path",
-            "required": "True"
+            "required": "False"
         }
     },
     "extraction": {
@@ -26,7 +26,7 @@
                     "year": "int",
                     "match_id": "str",
                     "match_name": "str",
-                    "match_date": "datetime.date",
+                    "match_date": "date",
                     "team_name": "str",
                     "player_id": "str",
                     "minute_label": "int",
@@ -42,13 +42,12 @@
             "read": {
                 "file_type": "excel",
                 "skip_rows": 0,
-                "use_cols": "A:G",
-                "sheet_name": 0,
+                "use_cols": "A:F",
+                "sheet_name": "players",
                 "apply_dtype": {
                     "player_unique_id": "str",
-                    "family_name": "str",
-                    "given_name": "str",
-                    "birth_date": "datetime.date",
+                    "name": "str",
+                    "birth_date": "date",
                     "count_tournaments": "int",
                     "list_tournaments": "str",
                     "player_wikipedia_link": "str"
@@ -69,10 +68,58 @@
                 "mode": "new"
             },
             "col_rename": {
+                "team_name": "team",
+                "name": "player_name"
             },
+            "col_output":
+                ["match_id",
+                 "year",
+                 "match_date",
+                 "team",
+                 "minute_label",
+                 "own_goal",
+                 "player_name",
+                 "birth_date",
+                 "count_tournaments",
+                 "Series Name"]                
+            ,
             "assign_static": {
+                "Series Name": "FIFA"
             },
             "plugin": null
+        }
+    },
+    "transformation": {
+        "description": "YuSheng Chen",
+        "input": {
+            "read": {
+                "file_type": "csv",
+                "separator": ",",
+                "apply_dtype": {
+                    "match_id": "str",
+                    "year": "int",
+                    "match_date": "date",
+                    "team": "str",
+                    "minute_label": "int",
+                    "own_goal": "int",
+                    "player_name": "str",
+                    "birth_date": "date",
+                    "count_tournaments": "int"  
+                }
+            },
+            "plugin": null
+        },
+        "transformation": {
+            "group_by": "country",
+            "top_n": 50
+        },
+        "output": {
+            "write": {
+                "file_type": "csv",
+                "separator": ",",
+                "mode": "new",
+                "index": "True"
+            }
         }
     }
 }

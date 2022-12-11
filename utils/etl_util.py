@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import date
-
 import utils.file_util as fileu
 import utils.misc_util as miscu
 
@@ -36,7 +35,7 @@ def apply_dtype_feature(df, config):
                     df[column_key] = df[column_key].fillna(0.0)
                     df[column_key] = df[column_key].astype(float)
                 # datetime.date type.
-                elif type_value is datetime.date or type_value == 'datetime.date':
+                elif type_value is datetime.date or type_value == 'date':
                     df[column_key] = np.vectorize(date.fromisoformat)(df[column_key])
 
             else:
@@ -70,13 +69,15 @@ def read_feature(config):
     :param config: dict; Provided configuration mapping
     :return: pd.DataFrame; Resulted dataframe
     """
-    df_target = fileu.read(description=miscu.eval_elem_mapping(config, 'description'),
-                           path=miscu.eval_elem_mapping(config, 'path'),
-                           file_type=miscu.eval_elem_mapping(config, 'file_type', default_value='excel'),
-                           separator=miscu.eval_elem_mapping(config, 'separator', default_value=','),
-                           skip_rows=miscu.eval_elem_mapping(config, 'skip_rows', default_value=0),
-                           use_cols=miscu.eval_elem_mapping(config, 'use_cols'),
-                           sheet_name=miscu.eval_elem_mapping(config, 'sheet_name', default_value=0))
+    reader = fileu.FileDataStorage()
+    df_target = reader.read(config)
+    # df_target = fileu.read(description=miscu.eval_elem_mapping(config, 'description'),
+    #                        path=miscu.eval_elem_mapping(config, 'path'),
+    #                        file_type=miscu.eval_elem_mapping(config, 'file_type', default_value='excel'),
+    #                        separator=miscu.eval_elem_mapping(config, 'separator', default_value=','),
+    #                        skip_rows=miscu.eval_elem_mapping(config, 'skip_rows', default_value=0),
+    #                        use_cols=miscu.eval_elem_mapping(config, 'use_cols'),
+    #                        sheet_name=miscu.eval_elem_mapping(config, 'sheet_name', default_value=0))
 
     df_target.columns = df_target.columns.str.strip()
 
@@ -91,15 +92,19 @@ def read_feature(config):
 def write_feature(df_output, config):
     """
     ETL feature to write a file, based on provided ETL configuration section
-    :param df_target: pd.DataFrame; the output dataframe
+    :param df_output: pd.DataFrame; the output dataframe
     :param config: dict; Provided configuration mapping
     :return: None
     """
-    path = fileu.write(description=miscu.eval_elem_mapping(config, 'description'),
-                       df=df_output,
-                       path=miscu.eval_elem_mapping(config, 'path'),
-                       file_type=miscu.eval_elem_mapping(config, 'file_type', default_value='csv'),
-                       separator=miscu.eval_elem_mapping(config, 'separator', default_value=','),
-                       mode=miscu.eval_elem_mapping(config, 'mode', default_value='new'))
+
+    writer = fileu.FileDataStorage()
+    path = writer.write(df_output, config)
+    # path = fileu.write(description=miscu.eval_elem_mapping(config, 'description'),
+    #                    df=df_output,
+    #                    path=miscu.eval_elem_mapping(config, 'path'),
+    #                    file_type=miscu.eval_elem_mapping(config, 'file_type', default_value='csv'),
+    #                    separator=miscu.eval_elem_mapping(config, 'separator', default_value=','),
+    #                    mode=miscu.eval_elem_mapping(config, 'mode', default_value='new'),
+    #                    index=miscu.eval_elem_mapping(config, 'index', default_value='False') == "True")
 
     return path
